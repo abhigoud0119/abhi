@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Welcome to Rana Gym</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: Arial, sans-serif;
+            background: url('/images/gymlanding.png') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            padding: 60px 80px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 0.5em;
+        }
+        p {
+            font-size: 1.5em;
+            margin-bottom: 2em;
+        }
+        a.button {
+            background-color: #f4511e;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        a.button:hover {
+            background-color: #d43f11;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RANA GYM</h1>
+        <p>Your fitness journey begins here!</p>
+        <a href="/index" class="button">Enter</a>
+    </div>
+</body>
+</html>

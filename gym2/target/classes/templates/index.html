@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GYM</title>
+  <style>
+	body{
+		background: url('/images/gymlanding.png') no-repeat center center fixed;
+		           background-size: cover;
+	}
+	.back-home-btn {
+	  position: fixed;
+	  bottom: 20px;
+	  right: 20px;
+	  text-decoration: none;
+	  z-index: 1000;
+	}
+	
+
+	.back-home-btn button {
+	  padding: 10px 15px;
+	  background-color: #4CAF50;
+	  color: white;
+	  border: none;
+	  border-radius: 5px;
+	  cursor: pointer;
+	}
+
+	.back-home-btn button:hover {
+	  background-color: #45a049;
+	}
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+	  color:white;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    input[type="text"], input[type="email"], input[type="date"], select {
+      padding: 5px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 5px 10px;
+      margin-top: 10px;
+    }
+	h1{
+		color: tomato;
+	}
+  </style>
+</head>
+<body>
+	
+	    <!-- Logo -->
+	  <center>  <img src="/images/gymlogo.png" alt="Gym Logo" style="width:150px; height:auto;" />
+
+	    <h1 th:text="${gymName}">Gym Name</h1>
+	   
+</center>
+ <center>
+	<h1 style="font-size: 48px;">RANA GYM</h1>
+
+	 </center>
+  
+  
+	
+
+  <form id="addMemberForm">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+	<input type="text" id="number" placeholder="Mobile Number" required />
+    <select id="membershipType" required>
+      <option value="">Select Membership Type</option>
+      <option value="Gold">Gold</option>
+      <option value="Silver">Silver</option>
+      <option value="Bronze">Bronze</option>
+    </select>
+    <input type="date" id="membershipExpiry" required />
+    <button type="submit">Add Member</button>
+  </form>
+
+  <table id="membersTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+		<th>Mobile Number</th>
+        <th>Membership Type</th>
+        <th>Membership Expiry</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+		
+      <!-- Members will be dynamically inserted here -->
+    </tbody>
+  </table>
+
+  <script>
+    const apiBase = '/api/members';
+
+    async function fetchMembers() {
+      const response = await fetch(apiBase);
+      const members = await response.json();
+      return members;
+    }
+
+    function createRow(member) {
+      const tr = document.createElement('tr');
+      tr.dataset.id = member.id;
+
+      tr.innerHTML = `
+        <td><input type="text" class="name" value="${member.name}" /></td>
+        <td><input type="email" class="email" value="${member.email}" /></td>
+		<td><input type="text" class="number" value="${member.number}" /></td>
+        <td>
+          <select class="membershipType">
+            <option value="Gold" ${member.membershipType === 'Gold' ? 'selected' : ''}>Gold</option>
+            <option value="Silver" ${member.membershipType === 'Silver' ? 'selected' : ''}>Silver</option>
+            <option value="Bronze" ${member.membershipType === 'Bronze' ? 'selected' : ''}>Bronze</option>
+          </select>
+        </td>
+        <td><input type="date" class="membershipExpiry" value="${member.membershipExpiry}" /></td>
+        <td>
+          <button class="saveBtn">Save</button>
+          <button class="deleteBtn">Delete</button>
+        </td>
+      `;
+
+      // Save button handler
+      tr.querySelector('.saveBtn').onclick = async () => {
+        const updatedMember = {
+          id: member.id,
+          name: tr.querySelector('.name').value.trim(),
+          email: tr.querySelector('.email').value.trim(),
+		  number: tr.querySelector('.number').value.trim(),
+          membershipType: tr.querySelector('.membershipType').value,
+          membershipExpiry: tr.querySelector('.membershipExpiry').value,
+        };
+
+        if (!updatedMember.name || !updatedMember.email || !updatedMember.number || !updatedMember.membershipType || !updatedMember.membershipExpiry) {
+          alert('All fields are required!');
+          return;
+        }
+
+        const res = await fetch(`${apiBase}/${member.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedMember),
+        });
+
+        if (res.ok) {
+          alert('Member updated successfully');
+          loadMembers();
+        } else {
+          alert('Failed to update member');
+        }
+      };
+
+      // Delete button handler
+      tr.querySelector('.deleteBtn').onclick = async () => {
+        if (confirm(`Delete member ${member.name}?`)) {
+          const res = await fetch(`${apiBase}/${member.id}`, { method: 'DELETE' });
+          if (res.ok) {
+            alert('Member deleted successfully');
+            loadMembers();
+          } else {
+            alert('Failed to delete member');
+          }
+        }
+      };
+
+      return tr;
+    }
+
+    async function loadMembers() {
+      const tbody = document.querySelector('#membersTable tbody');
+      tbody.innerHTML = '';
+      const members = await fetchMembers();
+      members.forEach(member => {
+        const row = createRow(member);
+        tbody.appendChild(row);
+      });
+    }
+
+    // Add member form submit
+    document.getElementById('addMemberForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+	  const number = document.getElementById('number').value.trim();
+      const membershipType = document.getElementById('membershipType').value;
+      const membershipExpiry = document.getElementById('membershipExpiry').value;
+
+      if (!name || !email ||!number ||  !membershipType || !membershipExpiry) {
+        alert('Please fill all fields');
+        return;
+      }
+
+      const newMember = { name, email, number, membershipType, membershipExpiry };
+
+      const res = await fetch(apiBase, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMember),
+      });
+
+      if (res.ok) {
+        alert('Member added successfully');
+        e.target.reset();
+        loadMembers();
+      } else {
+        alert('Failed to add member');
+      }
+    };
+
+    // Initial load
+    loadMembers();
+  </script>
+  <a href="/" class="back-home-btn">
+    <button>Back to Home</button>
+  </a>
+
+</body>
+</html>
